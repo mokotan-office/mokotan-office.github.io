@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>もこたんオフィス｜45年の現場を、いまのAIの速さで。</title>
 <meta name="description" content="機械商社・中小メーカーで営業から経営まで。新市場開拓・品質保証・IT/DX・人材育成を、45年の実践と生成AIでお手伝いする副業サービスです。">
+<!-- Google Analytics 4（本番 mokotan.jp のときだけ送信。ローカル確認時はコンソール出力のみ） -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  var GA_LIVE = location.hostname === 'mokotan.jp' || location.hostname === 'www.mokotan.jp';
+  function gtag(){ if (GA_LIVE) { dataLayer.push(arguments); } else { console.log('[GA4]', arguments); } }
+  if (GA_LIVE) {
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=G-XCLWCWTTF9';
+    document.head.appendChild(s);
+  }
+  gtag('js', new Date());
+  gtag('config', 'G-XCLWCWTTF9');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
@@ -177,7 +191,7 @@
 </div>
 
 <!-- Pain -->
-<section class="alt">
+<section class="alt" id="pain">
   <div class="wrap">
     <div class="sec-head">
       <div class="kicker">Challenges</div>
@@ -312,7 +326,7 @@
 </section>
 
 <!-- Mokotan -->
-<section class="moko">
+<section class="moko" id="moko">
   <div class="wrap">
     <div class="sec-head">
       <div class="kicker">Our dog</div>
@@ -346,6 +360,48 @@
     <div>© 2026 もこたんオフィス</div>
   </div>
 </footer>
+
+<script>
+/* GA4 イベント計測
+   form_click    : 問い合わせフォーム（Googleフォーム）へのクリック ← キーイベントに設定
+   cta_click     : ページ内ボタン・メニューのクリック（どこから問い合わせ欄へ来たか）
+   phone_click   : 電話リンク（tel:）のクリック ← 電話リンク追加後にキーイベント化
+   doc_download  : 資料（PDF等）のダウンロード ← 資料追加後にキーイベント化
+   section_view  : 各セクションが画面に表示された（どこまで読まれたか） */
+(function(){
+  function area(el){
+    var sec = el.closest('header, section, .hero, footer');
+    if (!sec) return 'other';
+    return sec.id || sec.tagName.toLowerCase();
+  }
+  document.addEventListener('click', function(e){
+    var a = e.target.closest('a');
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    var label = a.textContent.trim().slice(0, 40);
+    if (/forms\.gle|docs\.google\.com\/forms/.test(href)) {
+      gtag('event', 'form_click', { link_text: label, link_area: area(a) });
+    } else if (href.indexOf('tel:') === 0) {
+      gtag('event', 'phone_click', { link_text: label, link_area: area(a) });
+    } else if (a.hasAttribute('download') || /\.(pdf|docx?|xlsx?|pptx?|zip)(\?|$)/i.test(href)) {
+      gtag('event', 'doc_download', { file_name: href.split('/').pop(), link_area: area(a) });
+    } else if (href.charAt(0) === '#') {
+      gtag('event', 'cta_click', { link_text: label, link_target: href.slice(1) || 'top', link_area: area(a) });
+    }
+  });
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting) {
+          gtag('event', 'section_view', { section_id: en.target.id });
+          io.unobserve(en.target);
+        }
+      });
+    }, { rootMargin: '-45% 0px -45% 0px' });  /* 画面の中央付近に来たら表示とみなす（長いセクションでも反応する） */
+    document.querySelectorAll('section[id]').forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
 
 </body>
 </html>
